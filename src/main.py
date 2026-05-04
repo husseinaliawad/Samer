@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import random
+import os
 
 import pandas as pd
 from fastapi import FastAPI, Form, HTTPException, Request
@@ -11,7 +12,6 @@ from fastapi.templating import Jinja2Templates
 from src.recommender.data_loader import DatasetBundle, load_data
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "datafromdoctor"
 TEMPLATES_DIR = BASE_DIR / "web"
 
 app = FastAPI(title="BIA601 Recommender")
@@ -23,6 +23,25 @@ state: dict[str, object | None] = {
 }
 
 
+def resolve_data_dir() -> Path:
+    env_data_dir = os.getenv("BIA_DATA_DIR")
+    if env_data_dir:
+        p = Path(env_data_dir)
+        if p.exists():
+            return p
+
+    candidates = [
+        BASE_DIR / "datafromdoctor",
+        BASE_DIR / "HW__Data_S25",
+        BASE_DIR / "data",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    return BASE_DIR / "datafromdoctor"
+
+
 def ensure_data_ready() -> tuple[DatasetBundle, pd.DataFrame]:
     data = state["data"]
     product_scores = state["product_scores"]
@@ -30,10 +49,11 @@ def ensure_data_ready() -> tuple[DatasetBundle, pd.DataFrame]:
     if data is not None and product_scores is not None:
         return data, product_scores
 
-    if not DATA_DIR.exists():
-        raise HTTPException(status_code=404, detail=f"Data directory not found: {DATA_DIR}")
+    data_dir = resolve_data_dir()
+    if not data_dir.exists():
+        raise HTTPException(status_code=404, detail=f"Data directory not found: {data_dir}")
 
-    data = load_data(DATA_DIR)
+    data = load_data(data_dir)
 
     rating_score = data.ratings.groupby("product_id", as_index=False)["rating"].mean().rename(
         columns={"rating": "avg_rating"}

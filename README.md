@@ -7,11 +7,16 @@
 Optimize e-commerce recommendations using a Genetic Algorithm (GA) based on the provided dataset.
 
 ## Dataset
-Expected files in `datafromdoctor/`:
+Expected files in dataset folder (`datafromdoctor/` or `HW__Data_S25/`):
 - users.xlsx
 - products.xlsx
 - ratings.xlsx
-- behavior_15500.xlsx
+- behavior.xlsx (or behavior_*.xlsx)
+
+You can also set a custom dataset directory with:
+```powershell
+$env:BIA_DATA_DIR="C:\path\to\HW__Data_S25"
+```
 
 ## Setup
 ```powershell

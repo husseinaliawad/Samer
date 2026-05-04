@@ -2,8 +2,8 @@
 
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Form, HTTPException, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from src.recommender.baseline import recommend_baseline_for_user
@@ -20,7 +20,7 @@ state: dict[str, TrainArtifacts | None] = {"artifacts": None}
 
 
 @app.get("/", response_class=HTMLResponse)
-def home(request: Request):
+def home(request: Request, message: str | None = None, error: str | None = None):
     artifacts = state["artifacts"]
     return templates.TemplateResponse(
         "index.html",
@@ -28,8 +28,62 @@ def home(request: Request):
             "request": request,
             "trained": artifacts is not None,
             "metrics": artifacts.metrics if artifacts else None,
+            "message": message,
+            "error": error,
+            "recommendation": None,
         },
     )
+
+
+@app.post("/ui/train", response_class=HTMLResponse)
+def train_from_ui(top_k: int = Form(default=10)):
+    try:
+        train(top_k=top_k)
+        return RedirectResponse(url="/?message=تم+التدريب+بنجاح", status_code=303)
+    except HTTPException as exc:
+        return RedirectResponse(url=f"/?error={exc.detail}", status_code=303)
+
+
+@app.post("/ui/recommend", response_class=HTMLResponse)
+def recommend_from_ui(request: Request, user_id: int = Form(...), top_k: int = Form(default=10)):
+    artifacts = state["artifacts"]
+    if artifacts is None:
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "trained": False,
+                "metrics": None,
+                "message": None,
+                "error": "يجب تشغيل التدريب أولاً",
+                "recommendation": None,
+            },
+        )
+    try:
+        result = recommend(user_id=user_id, top_k=top_k)
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "trained": True,
+                "metrics": artifacts.metrics,
+                "message": "تم توليد التوصيات بنجاح",
+                "error": None,
+                "recommendation": result,
+            },
+        )
+    except HTTPException as exc:
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "trained": True,
+                "metrics": artifacts.metrics,
+                "message": None,
+                "error": str(exc.detail),
+                "recommendation": None,
+            },
+        )
 
 
 @app.post("/train")

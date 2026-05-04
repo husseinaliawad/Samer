@@ -46,6 +46,24 @@
     }
     .ok { color: var(--ok); background: #ecfdf5; }
     .warn { color: #854d0e; background: #fefce8; }
+    .err { color: #991b1b; background: #fee2e2; }
+    .panel { margin-top: 16px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: #fafcff; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    input {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-width: 120px;
+    }
+    button {
+      padding: 10px 16px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--accent2);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
     code {
       background: #f1f5f9;
       padding: 2px 6px;
@@ -69,8 +87,33 @@
 <body>
   <main class="wrap">
     <h1>مشروع تحسين التوصيات بالخوارزمية الجينية</h1>
-    <p>لتشغيل التدريب استخدم <code>POST /train</code> ثم اطلب التوصيات عبر <code>GET /recommend/{user_id}</code>.</p>
-    <p>توثيق API: <code>/docs</code></p>
+    <p>واجهة سهلة للدكتور: اضغط تدريب ثم أدخل رقم المستخدم للحصول على التوصيات مباشرة.</p>
+    <p>يمكن استخدام API أيضًا عبر <code>/docs</code></p>
+
+    {% if message %}
+      <div class="status ok">{{ message }}</div>
+    {% endif %}
+    {% if error %}
+      <div class="status err">{{ error }}</div>
+    {% endif %}
+
+    <section class="panel">
+      <form method="post" action="/ui/train" class="row">
+        <label>عدد النتائج (Top-K):</label>
+        <input type="number" name="top_k" value="10" min="1" max="30" />
+        <button type="submit">تشغيل التدريب</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <form method="post" action="/ui/recommend" class="row">
+        <label>رقم المستخدم user_id:</label>
+        <input type="number" name="user_id" required />
+        <label>Top-K:</label>
+        <input type="number" name="top_k" value="10" min="1" max="30" />
+        <button type="submit">اعرض التوصيات</button>
+      </form>
+    </section>
 
     {% if trained %}
       <div class="status ok">النموذج مدرب وجاهز</div>
@@ -98,6 +141,14 @@
           </tr>
         </tbody>
       </table>
+
+      {% if recommendation %}
+        <section class="panel">
+          <h3>توصيات المستخدم {{ recommendation.user_id }}</h3>
+          <p><strong>Baseline:</strong> {{ recommendation.baseline_recommendations }}</p>
+          <p><strong>GA Optimized:</strong> {{ recommendation.ga_optimized_recommendations }}</p>
+        </section>
+      {% endif %}
     {% else %}
       <div class="status warn">لم يتم التدريب بعد</div>
     {% endif %}

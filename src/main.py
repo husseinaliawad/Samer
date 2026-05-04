@@ -82,10 +82,19 @@ def recommend_heuristic(user_id: int, top_k: int = 10) -> dict:
     candidates["pref_bonus"] = candidates["category"].map(lambda c: pref_map.get(c, 0.0))
     candidates["final_score"] = candidates["base_score"] + 1.2 * candidates["pref_bonus"]
     top = candidates.sort_values("final_score", ascending=False).head(top_k)
+    items = []
+    for _, row in top.iterrows():
+        items.append(
+            {
+                "product_id": int(row["product_id"]),
+                "category": str(row["category"]) if pd.notna(row["category"]) else "غير محدد",
+                "price": float(row["price"]) if "price" in row and pd.notna(row["price"]) else None,
+            }
+        )
 
     return {
         "user_id": user_id,
-        "recommendations": top["product_id"].astype(int).tolist(),
+        "recommendations": items,
     }
 
 

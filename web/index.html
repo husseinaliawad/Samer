@@ -82,6 +82,20 @@
       text-align: center;
     }
     th { background: #eff6ff; }
+    .rec-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .rec-card {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px;
+      line-height: 1.7;
+    }
+    .rec-title { font-weight: 700; color: var(--accent2); }
   </style>
 </head>
 <body>
@@ -115,8 +129,16 @@
 
     {% if recommendation %}
       <section class="panel">
-        <h3>توصيات المستخدم {{ recommendation.user_id }}</h3>
-        <p><strong>Recommendations:</strong> {{ recommendation.recommendations }}</p>
+        <h3>التوصيات المقترحة</h3>
+        <div class="rec-list">
+          {% for item in recommendation.recommendations %}
+            <div class="rec-card">
+              <div class="rec-title">منتج مقترح</div>
+              <div>الفئة: {{ item.category }}</div>
+              <div>السعر: {{ item.price if item.price is not none else 'غير متوفر' }}</div>
+            </div>
+          {% endfor %}
+        </div>
       </section>
     {% else %}
       <div class="status warn">لم يتم عرض توصيات بعد</div>

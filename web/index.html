@@ -87,7 +87,7 @@
 <body>
   <main class="wrap">
     <h1>مشروع تحسين التوصيات بالخوارزمية الجينية</h1>
-    <p>واجهة سهلة للدكتور: اضغط تدريب ثم أدخل رقم المستخدم للحصول على التوصيات مباشرة.</p>
+    <p>أدخل رقم المستخدم للحصول على التوصيات مباشرة. التدريب يتم تلقائيًا بالخلفية.</p>
     <p>يمكن استخدام API أيضًا عبر <code>/docs</code></p>
 
     {% if message %}
@@ -96,14 +96,6 @@
     {% if error %}
       <div class="status err">{{ error }}</div>
     {% endif %}
-
-    <section class="panel">
-      <form method="post" action="/ui/train" class="row">
-        <label>عدد النتائج (Top-K):</label>
-        <input type="number" name="top_k" value="10" min="1" max="30" />
-        <button type="submit">تشغيل التدريب</button>
-      </form>
-    </section>
 
     <section class="panel">
       <form method="post" action="/ui/recommend" class="row">

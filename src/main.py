@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from fastapi import FastAPI, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from src.recommender.baseline import recommend_baseline_for_user
@@ -17,6 +17,25 @@ app = FastAPI(title="BIA601 GA Recommender")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 state: dict[str, TrainArtifacts | None] = {"artifacts": None}
+
+
+def ensure_trained(top_k: int = 10) -> TrainArtifacts:
+    artifacts = state["artifacts"]
+    if artifacts is not None:
+        return artifacts
+    if not DATA_DIR.exists():
+        raise HTTPException(status_code=404, detail=f"Data directory not found: {DATA_DIR}")
+    artifacts = train_pipeline(str(DATA_DIR), top_k=top_k)
+    state["artifacts"] = artifacts
+    return artifacts
+
+
+@app.on_event("startup")
+def startup_train():
+    try:
+        ensure_trained(top_k=10)
+    except Exception:
+        pass
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -35,31 +54,10 @@ def home(request: Request, message: str | None = None, error: str | None = None)
     )
 
 
-@app.post("/ui/train", response_class=HTMLResponse)
-def train_from_ui(top_k: int = Form(default=10)):
-    try:
-        train(top_k=top_k)
-        return RedirectResponse(url="/?message=تم+التدريب+بنجاح", status_code=303)
-    except HTTPException as exc:
-        return RedirectResponse(url=f"/?error={exc.detail}", status_code=303)
-
-
 @app.post("/ui/recommend", response_class=HTMLResponse)
 def recommend_from_ui(request: Request, user_id: int = Form(...), top_k: int = Form(default=10)):
-    artifacts = state["artifacts"]
-    if artifacts is None:
-        return templates.TemplateResponse(
-            "index.html",
-            {
-                "request": request,
-                "trained": False,
-                "metrics": None,
-                "message": None,
-                "error": "يجب تشغيل التدريب أولاً",
-                "recommendation": None,
-            },
-        )
     try:
+        artifacts = ensure_trained(top_k=top_k)
         result = recommend(user_id=user_id, top_k=top_k)
         return templates.TemplateResponse(
             "index.html",
@@ -88,11 +86,7 @@ def recommend_from_ui(request: Request, user_id: int = Form(...), top_k: int = F
 
 @app.post("/train")
 def train(top_k: int = 10):
-    if not DATA_DIR.exists():
-        raise HTTPException(status_code=404, detail=f"Data directory not found: {DATA_DIR}")
-
-    artifacts = train_pipeline(str(DATA_DIR), top_k=top_k)
-    state["artifacts"] = artifacts
+    artifacts = ensure_trained(top_k=top_k)
     return {
         "message": "Training completed",
         "metrics": artifacts.metrics,
@@ -103,17 +97,13 @@ def train(top_k: int = 10):
 
 @app.get("/metrics")
 def metrics():
-    artifacts = state["artifacts"]
-    if artifacts is None:
-        raise HTTPException(status_code=400, detail="Model not trained. Call POST /train first.")
+    artifacts = ensure_trained(top_k=10)
     return artifacts.metrics
 
 
 @app.get("/recommend/{user_id}")
 def recommend(user_id: int, top_k: int = 10):
-    artifacts = state["artifacts"]
-    if artifacts is None:
-        raise HTTPException(status_code=400, detail="Model not trained. Call POST /train first.")
+    artifacts = ensure_trained(top_k=top_k)
 
     user_exists = user_id in set(artifacts.data.users["user_id"].tolist())
     if not user_exists:

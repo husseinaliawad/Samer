@@ -1,6 +1,7 @@
 ﻿from __future__ import annotations
 
 from pathlib import Path
+import random
 
 import pandas as pd
 from fastapi import FastAPI, Form, HTTPException, Request
@@ -90,6 +91,13 @@ def recommend_heuristic(user_id: int, top_k: int = 10) -> dict:
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request, message: str | None = None, error: str | None = None):
+    sample_user_ids: list[int] = []
+    try:
+        data, _ = ensure_data_ready()
+        sample_user_ids = sorted(data.users["user_id"].astype(int).tolist())[:50]
+    except Exception:
+        sample_user_ids = []
+
     return templates.TemplateResponse(
         "index.html",
         {
@@ -97,14 +105,20 @@ def home(request: Request, message: str | None = None, error: str | None = None)
             "message": message,
             "error": error,
             "recommendation": None,
+            "sample_user_ids": sample_user_ids,
         },
     )
 
 
 @app.post("/ui/recommend", response_class=HTMLResponse)
-def recommend_from_ui(request: Request, user_id: int = Form(...), top_k: int = Form(default=10)):
+def recommend_from_ui(request: Request, user_id: int | None = Form(default=None), top_k: int = Form(default=10)):
     try:
+        if user_id is None:
+            data, _ = ensure_data_ready()
+            user_id = int(random.choice(data.users["user_id"].tolist()))
         result = recommend_heuristic(user_id=user_id, top_k=top_k)
+        data, _ = ensure_data_ready()
+        sample_user_ids = sorted(data.users["user_id"].astype(int).tolist())[:50]
         return templates.TemplateResponse(
             "index.html",
             {
@@ -112,9 +126,16 @@ def recommend_from_ui(request: Request, user_id: int = Form(...), top_k: int = F
                 "message": "تم توليد التوصيات بنجاح",
                 "error": None,
                 "recommendation": result,
+                "sample_user_ids": sample_user_ids,
             },
         )
     except HTTPException as exc:
+        sample_user_ids: list[int] = []
+        try:
+            data, _ = ensure_data_ready()
+            sample_user_ids = sorted(data.users["user_id"].astype(int).tolist())[:50]
+        except Exception:
+            pass
         return templates.TemplateResponse(
             "index.html",
             {
@@ -122,6 +143,7 @@ def recommend_from_ui(request: Request, user_id: int = Form(...), top_k: int = F
                 "message": None,
                 "error": str(exc.detail),
                 "recommendation": None,
+                "sample_user_ids": sample_user_ids,
             },
         )
 

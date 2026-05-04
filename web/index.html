@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BIA601 - GA Recommender</title>
+  <title>BIA601 - Recommender</title>
   <style>
     :root {
       --bg1: #f5f7ff;
@@ -86,8 +86,8 @@
 </head>
 <body>
   <main class="wrap">
-    <h1>مشروع تحسين التوصيات بالخوارزمية الجينية</h1>
-    <p>أدخل رقم المستخدم للحصول على التوصيات مباشرة. التدريب يتم تلقائيًا بالخلفية.</p>
+    <h1>مشروع تحسين التوصيات</h1>
+    <p>أدخل رقم المستخدم للحصول على التوصيات مباشرة.</p>
     <p>يمكن استخدام API أيضًا عبر <code>/docs</code></p>
 
     {% if message %}
@@ -107,42 +107,13 @@
       </form>
     </section>
 
-    {% if trained %}
-      <div class="status ok">النموذج مدرب وجاهز</div>
-      <table>
-        <thead>
-          <tr>
-            <th>النموذج</th>
-            <th>Precision@K</th>
-            <th>Recall@K</th>
-            <th>NDCG@K</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Baseline</td>
-            <td>{{ metrics.baseline.precision_at_k }}</td>
-            <td>{{ metrics.baseline.recall_at_k }}</td>
-            <td>{{ metrics.baseline.ndcg_at_k }}</td>
-          </tr>
-          <tr>
-            <td>GA Optimized</td>
-            <td>{{ metrics.ga_optimized.precision_at_k }}</td>
-            <td>{{ metrics.ga_optimized.recall_at_k }}</td>
-            <td>{{ metrics.ga_optimized.ndcg_at_k }}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      {% if recommendation %}
-        <section class="panel">
-          <h3>توصيات المستخدم {{ recommendation.user_id }}</h3>
-          <p><strong>Baseline:</strong> {{ recommendation.baseline_recommendations }}</p>
-          <p><strong>GA Optimized:</strong> {{ recommendation.ga_optimized_recommendations }}</p>
-        </section>
-      {% endif %}
+    {% if recommendation %}
+      <section class="panel">
+        <h3>توصيات المستخدم {{ recommendation.user_id }}</h3>
+        <p><strong>Recommendations:</strong> {{ recommendation.recommendations }}</p>
+      </section>
     {% else %}
-      <div class="status warn">لم يتم التدريب بعد</div>
+      <div class="status warn">لم يتم عرض توصيات بعد</div>
     {% endif %}
   </main>
 </body>

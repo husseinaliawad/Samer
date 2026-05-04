@@ -1,0 +1,106 @@
+﻿<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BIA601 - GA Recommender</title>
+  <style>
+    :root {
+      --bg1: #f5f7ff;
+      --bg2: #e4f1ff;
+      --card: #ffffff;
+      --text: #1f2937;
+      --accent: #0f766e;
+      --accent2: #2563eb;
+      --ok: #166534;
+      --border: #dbe4f0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top right, var(--bg2), var(--bg1));
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .wrap {
+      width: min(980px, 100%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+      padding: 28px;
+    }
+    h1 { margin: 0 0 12px; color: var(--accent2); }
+    p { margin: 0 0 10px; line-height: 1.7; }
+    .status {
+      display: inline-block;
+      margin: 12px 0 20px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+    }
+    .ok { color: var(--ok); background: #ecfdf5; }
+    .warn { color: #854d0e; background: #fefce8; }
+    code {
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 6px;
+      direction: ltr;
+      unicode-bidi: bidi-override;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px;
+      text-align: center;
+    }
+    th { background: #eff6ff; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>مشروع تحسين التوصيات بالخوارزمية الجينية</h1>
+    <p>لتشغيل التدريب استخدم <code>POST /train</code> ثم اطلب التوصيات عبر <code>GET /recommend/{user_id}</code>.</p>
+    <p>توثيق API: <code>/docs</code></p>
+
+    {% if trained %}
+      <div class="status ok">النموذج مدرب وجاهز</div>
+      <table>
+        <thead>
+          <tr>
+            <th>النموذج</th>
+            <th>Precision@K</th>
+            <th>Recall@K</th>
+            <th>NDCG@K</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Baseline</td>
+            <td>{{ metrics.baseline.precision_at_k }}</td>
+            <td>{{ metrics.baseline.recall_at_k }}</td>
+            <td>{{ metrics.baseline.ndcg_at_k }}</td>
+          </tr>
+          <tr>
+            <td>GA Optimized</td>
+            <td>{{ metrics.ga_optimized.precision_at_k }}</td>
+            <td>{{ metrics.ga_optimized.recall_at_k }}</td>
+            <td>{{ metrics.ga_optimized.ndcg_at_k }}</td>
+          </tr>
+        </tbody>
+      </table>
+    {% else %}
+      <div class="status warn">لم يتم التدريب بعد</div>
+    {% endif %}
+  </main>
+</body>
+</html>

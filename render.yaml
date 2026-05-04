@@ -1,0 +1,7 @@
+﻿services:
+  - type: web
+    name: bia601-ga-recommender
+    env: docker
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /

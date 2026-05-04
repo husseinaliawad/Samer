@@ -1,0 +1,44 @@
+﻿# تقرير مشروع BIA601 - الخوارزميات الذكية (S25)
+
+## 1) فكرة المشروع
+تم تطوير نظام توصية لمتجر إلكتروني مع تحسين مخرجات التوصية باستخدام الخوارزمية الجينية (Genetic Algorithm).
+
+## 2) ما معنى تحسين التوصيات؟
+تحسين التوصيات يعني زيادة جودة المنتجات المقترحة للمستخدم بحيث تصبح أكثر ملاءمة لاهتمامه، وينعكس ذلك على:
+- زيادة النقر (Click-through)
+- زيادة الإضافة إلى السلة
+- زيادة الشراء
+
+## 3) كيف تساعد الخوارزميات الجينية؟
+تمثّل كل قائمة توصيات حلاً (Chromosome)، ثم:
+1. نحسب Fitness لكل قائمة اعتمادًا على سلوك المستخدم (viewed, clicked, purchased).
+2. نختار أفضل الحلول (Selection).
+3. ندمجها لإنتاج حلول جديدة (Crossover).
+4. نضيف تنوعًا عبر Mutation.
+5. نكرر العملية عبر أجيال حتى نصل لقوائم أفضل.
+
+## 4) البيانات المستخدمة
+- users.xlsx: بيانات المستخدمين (user_id, age, location)
+- products.xlsx: بيانات المنتجات (product_id, category, price)
+- ratings.xlsx: التقييمات (user_id, product_id, rating)
+- behavior_15500.xlsx: السلوك الضمني (viewed, clicked, purchased)
+
+## 5) المنهجية
+- بناء نموذج Baseline يجمع متوسط التقييم + تفاعل السلوك.
+- إنشاء مرشحات منتجات للمستخدم.
+- تطبيق GA لاختيار أفضل Top-K توصيات حسب دالة Fitness.
+- تقييم الأداء قبل/بعد التحسين باستخدام Precision@K, Recall@K, NDCG@K.
+
+## 6) المرجع العلمي المعتمد (ضمن 2024-2026)
+Al Sabri, M.A., Zubair, S. & Alnuhait, H.A. (2026).
+Improved prediction on recommendation system by creating a new model that employs Mahout collaborative filtering with content-based filtering based on genetic algorithm methods.
+Discover Artificial Intelligence, 6, 20.
+DOI: 10.1007/s44163-025-00678-y
+
+## 7) مخرجات النظام
+- API للتدريب والتوصية والمقاييس.
+- واجهة ويب تعرض حالة التدريب ونتائج المقارنة.
+- إمكانية طلب توصيات مخصصة لكل مستخدم.
+
+## 8) النتيجة
+تم إنشاء نظام توصية عملي قابل للتطوير، ويوظف الخوارزمية الجينية لتحسين جودة التوصيات في سياق التجارة الإلكترونية.

@@ -1,0 +1,31 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+
+# Virtual environments
+.venv/
+.venv*/
+env/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Build artifacts
+dist/
+build/
+
+# Local runtime
+*.sqlite3
+
+# Optional: keep large local data out of Git if needed
+# datafromdoctor/
